@@ -43,13 +43,15 @@ label{display:block;font-size:.85rem;color:var(--mu);margin:8px 0 2px}dialog inp
 .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.row .sp{flex:1}
 .h{font-size:.88rem;border-top:1px solid var(--bd);padding:6px 0}.mu{color:var(--mu)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.hd{display:flex;align-items:center;gap:12px}.hd img{height:52px;width:auto}.hd>div:nth-child(2){min-width:0}.hd .sp{flex:1}.who{font-size:.82rem;color:var(--mu);text-align:right;flex:none}
+.lg2{max-width:380px;margin:4vh auto;padding:0 16px}.lg2 input{width:100%}.lg2 .card{padding:22px}
+.msg{color:var(--bad);font-size:.88rem;margin:8px 0 0;min-height:1.2em}
+.t.e{background:none;border:2px dashed var(--bd);color:var(--mu)}.t.l{background:var(--bd);border-color:var(--bd);color:var(--tx);font-weight:400}
+.hd h1{font-size:1.3rem}@media(max-width:600px){.hd img{height:38px}.who{font-size:.75rem}}
 </style>
 </head>
 <body>
-<header>
-<h1>SIMLAB BSM TKJ</h1>
-<p>Inventaris, pemeliharaan preventif, dan anggaran Lab Komputer TKJ · SMK Bina Siswa Mandiri Bl. Limbangan</p>
-</header>
+<header id="hd"></header>
 <nav id="nav" role="tablist"></nav>
 <main id="v"></main>
 <dialog id="dlg"></dialog>
@@ -62,7 +64,37 @@ const TABS=[["dash","Dasbor"],["inv","Inventaris"],["pm","Pemeliharaan"],["rab",
 const RAB0=[["Diagnosis 35 komputer",500000],["Perbaikan 5 komputer rusak",4000000],["Komponen pengganti",2500000],["Cleaning kit dan alat maintenance",750000],["Kabel, konektor, bahan pendukung",750000],["Digitalisasi inventaris dan label",500000],["Pelatihan/pemeliharaan bersama Skyline",1500000],["Penataan kabel dan keselamatan",1000000],["Monitoring dan evaluasi",500000],["Cadangan teknis",1000000]];
 const PROG0=["Audit dan inventarisasi","Diagnosis kerusakan","Perbaikan prioritas","Pemeliharaan preventif","Inventaris dan logbook digital","Pendampingan mitra","Evaluasi pemanfaatan lab"];
 function seed(){return{units:Array.from({length:35},(_,i)=>({id:"TKJ-"+String(i+1).padStart(2,"0"),spec:"",lok:"Lab TKJ",dana:"",kon:i>=30?"Rusak":"Berfungsi",cat:"",hist:[]})),rab:RAB0.map(([n,e])=>({n,e,r:0})),prog:PROG0.map(n=>({n,s:"Belum"}))}}
-function load(){try{const x=localStorage.getItem(KEY);if(x)return JSON.parse(x)}catch(e){}return seed()}
+const SK="simlab-sess",ROLE={admin:"Admin",kepsek:"Kepala sekolah",kalab:"Kepala laboratorium"};
+function autoCells(us,c){const m={};us.forEach((u,i)=>m[Math.floor(i/c)+"-"+(i%c)]=u.id);return m}
+function fix(x){x.users=x.users||[];x.denah=x.denah||{cols:7,rows:5,cells:autoCells(x.units,7)};return x}
+function load(){try{const x=localStorage.getItem(KEY);if(x)return fix(JSON.parse(x))}catch(e){}return fix(seed())}
+let me=null,dedit=false;
+const canEdit=()=>!!me&&me.r!=="kepsek",isAdm=()=>!!me&&me.r==="admin";
+const tabs=()=>isAdm()?[...TABS,["usr","Pengguna"]]:TABS;
+async function hp(p,salt){const b=new TextEncoder().encode(salt+":"+p);if(window.crypto&&crypto.subtle){const d=await crypto.subtle.digest("SHA-256",b);return[...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("")}return btoa(unescape(encodeURIComponent(salt+":"+p)))}
+function login(u){me=u;try{sessionStorage.setItem(SK,u.u)}catch(e){}tab="dash";render()}
+function place(id){const D=S.denah;for(let r=0;r<D.rows;r++)for(let c=0;c<D.cols;c++){const k=r+"-"+c;if(!D.cells[k]){D.cells[k]=id;return}}}
+function lock(r){if(canEdit())return;r.querySelectorAll("input:not(#q),select:not(#f),textarea").forEach(e=>e.disabled=true);r.querySelectorAll('[data-a="add"],[data-a="pm1"],[data-a="pmall"],[data-a="reset"],[data-a="usave"],[data-a="udel"],[data-a="hadd"],[data-a="dedit"],.hrow').forEach(e=>e.remove())}
+function hdr(){$("#hd").innerHTML=`<div class="hd"><img src="logo.png" alt="Logo SMK Bina Siswa Mandiri" onerror="this.remove()"><div><h1>SIMLAB BSM TKJ</h1><p>Inventaris, pemeliharaan preventif, dan anggaran Lab Komputer TKJ · SMK Bina Siswa Mandiri Bl. Limbangan</p></div><span class="sp"></span>${me?`<div class="who">${esc(me.n)}<br>${ROLE[me.r]}<br><button class="bt" data-a="out" style="margin-top:4px">Keluar</button></div>`:""}</div>`}
+function authView(){const s=!S.users.length;return `<div class="lg2" id="auth"><div class="card"><h2>${s?"Buat akun admin pertama":"Masuk"}</h2>${s?'<label for="a-n">Nama lengkap</label><input id="a-n" autocomplete="name">':""}<label for="a-u">Nama pengguna</label><input id="a-u" autocomplete="username" autocapitalize="none"><label for="a-p">Kata sandi</label><input id="a-p" type="password" autocomplete="${s?"new-password":"current-password"}">${s?'<label for="a-p2">Ulangi kata sandi</label><input id="a-p2" type="password" autocomplete="new-password">':""}<p class="msg" id="a-m" role="alert"></p><button class="bt pr" id="a-b" data-a="${s?"setup":"login"}" style="width:100%">${s?"Buat akun dan masuk":"Masuk"}</button></div></div>`}
+function usr(){return `<div class="card sc"><h2>Pengguna dan peran</h2><table><thead><tr><th>Nama</th><th>Nama pengguna</th><th>Peran</th><th></th></tr></thead><tbody>${S.users.map((u,i)=>`<tr><td>${esc(u.n)}</td><td>${esc(u.u)}</td><td>${ROLE[u.r]}</td><td><button class="bt" data-a="upw" data-i="${i}">Ganti sandi</button> ${u.u===me.u?"":`<button class="bt" data-a="udl" data-i="${i}" style="color:var(--bad)">Hapus</button>`}</td></tr>`).join("")}</tbody></table></div>
+<div class="card"><h2>Tambah pengguna</h2><div class="tb"><input id="n-n" placeholder="Nama lengkap" aria-label="Nama lengkap"><input id="n-u" placeholder="Nama pengguna" autocapitalize="none" aria-label="Nama pengguna"><select id="n-r" aria-label="Peran">${Object.entries(ROLE).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select><input id="n-p" type="password" placeholder="Kata sandi (min. 6)" aria-label="Kata sandi"></div><button class="bt pr" data-a="uadd">Tambah pengguna</button><p class="msg" id="n-m" role="alert"></p>
+<p class="mu" style="margin:6px 0 0">Admin dan kepala laboratorium dapat mengisi data. Kepala sekolah hanya dapat melihat. Akun dan data tersimpan di peramban perangkat ini.</p></div>`}
+function denah(){
+ const D=S.denah,ed=dedit&&canEdit(),cs=[],shown=new Set();
+ for(let r=0;r<D.rows;r++)for(let c=0;c<D.cols;c++){const k=r+"-"+c,v=D.cells[k],u=v&&S.units.find(x=>x.id===v);
+  if(u){shown.add(u.id);cs.push(`<button class="t ${cls(u.kon)}" data-a="${ed?"cell":"open"}" data-k="${k}" data-id="${esc(u.id)}" title="${esc(u.id)}: ${u.kon}">${esc(u.id.replace(/^TKJ-/,""))}</button>`)}
+  else if(v&&v[0]==="#")cs.push(`<button class="t l" data-a="${ed?"cell":"none"}" data-k="${k}">${esc(v.slice(1))}</button>`);
+  else cs.push(ed?`<button class="t e" data-a="cell" data-k="${k}" aria-label="Sel kosong">+</button>`:"<span></span>")}
+ const un=S.units.filter(u=>!shown.has(u.id));
+ return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><h2 style="margin:0">Denah kesiapan lab</h2>${canEdit()?`<button class="bt" data-a="dedit">${ed?"Selesai mengatur":"Atur denah"}</button>`:""}</div>
+ ${ed?`<div class="tb"><label style="margin:0;display:flex;align-items:center;gap:6px">Kolom <input id="dc" type="number" min="1" max="12" value="${D.cols}" style="width:70px"></label><label style="margin:0;display:flex;align-items:center;gap:6px">Baris <input id="dr" type="number" min="1" max="12" value="${D.rows}" style="width:70px"></label></div>`:""}
+ <div class="map" style="grid-template-columns:repeat(${D.cols},1fr)">${cs.join("")}</div>
+ <div class="lg"><span>Hijau: berfungsi</span><span>Kuning: dalam perbaikan</span><span>Merah: rusak</span><span>${ed?"Ketuk kotak untuk menempatkan unit atau penanda":"Ketuk nomor untuk membuka unit"}</span></div>
+ ${ed&&un.length?`<p class="mu">Belum ditempatkan: ${un.map(u=>esc(u.id)).join(", ")}</p>`:""}`}
+function openC(k){const D=S.denah,v=D.cells[k]||"",un=S.units.filter(u=>u.id===v||!Object.values(D.cells).includes(u.id)),[r,c]=k.split("-").map(Number);
+ $("#dlg").innerHTML=`<h2>Baris ${r+1}, kolom ${c+1}</h2><label for="c-u">Unit komputer</label><select id="c-u"><option value="">(kosong)</option>${un.map(u=>`<option ${u.id===v?"selected":""}>${esc(u.id)}</option>`).join("")}</select><label for="c-l">Atau penanda, misalnya Meja guru atau Pintu</label><input id="c-l" value="${v[0]==="#"?esc(v.slice(1)):""}"><div class="row"><button class="bt pr" data-a="csave" data-k="${k}">Simpan</button><button class="bt" data-a="close">Batal</button></div>`;
+ const d=$("#dlg");if(!d.open)d.showModal()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let S=load(),tab="dash",q="",flt="all",rst=false;
 const cnt=k=>S.units.filter(u=>u.kon===k).length;
@@ -78,9 +110,7 @@ function dash(){
  const est=S.rab.reduce((a,x)=>a+x.e,0),rl=S.rab.reduce((a,x)=>a+x.r,0);
  const broken=S.units.filter(u=>u.kon!=="Berfungsi");
  return `<div class="kpis">${kpi(n,"unit komputer")}${kpi(ok+" ("+Math.round(ok/Math.max(n,1)*100)+"%)","berfungsi")}${kpi(bad,"rusak")}${kpi(fx,"dalam perbaikan")}${kpi(pm+"/"+n,"dipelihara bulan ini")}</div>
- <div class="two"><div class="card"><h2>Denah kesiapan lab</h2>
- <div class="map">${S.units.map(u=>`<button class="t ${cls(u.kon)}" data-a="open" data-id="${esc(u.id)}" title="${esc(u.id)}: ${u.kon}">${esc(u.id.replace(/^TKJ-/,""))}</button>`).join("")}</div>
- <div class="lg"><span>Hijau: berfungsi</span><span>Kuning: dalam perbaikan</span><span>Merah: rusak</span><span>Ketuk nomor untuk membuka unit</span></div></div>
+ <div class="two"><div class="card">${denah()}</div>
  <div><div class="card"><h2>Perlu tindakan</h2>${broken.length?broken.map(u=>`<div class="h"><button class="bt" data-a="open" data-id="${esc(u.id)}">${esc(u.id)}</button> ${badge(u.kon)}</div>`).join(""):'<p class="mu">Semua unit berfungsi.</p>'}
  <div class="h">Belum dipelihara bulan ini: <b>${n-pm}</b> unit</div></div>
  <div class="card"><h2>Anggaran</h2><div style="display:flex;justify-content:space-between"><span>Realisasi</span><b>${rp(rl)}</b></div>${bar(rl/est*100)}<p class="mu" style="margin:6px 0 0">dari estimasi ${rp(est)}</p></div></div></div>`}
@@ -117,10 +147,12 @@ function mon(){
  <div class="card sc"><h2>Program tujuh kegiatan</h2><table><tbody>${S.prog.map((p,i)=>`<tr><td>${i+1}. ${esc(p.n)}</td><td><select data-a="prog" data-i="${i}" aria-label="Status ${esc(p.n)}">${["Belum","Berjalan","Selesai"].map(o=>`<option ${o===p.s?"selected":""}>${o}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div>
  <button class="bt" data-a="reset">${rst?"Klik lagi untuk menghapus semua data":"Kembalikan data awal"}</button>`}
 
-const V={dash,inv,pm,rab,mon};
+const V={dash,inv,pm,rab,mon,usr};
 function render(){
- $("#nav").innerHTML=TABS.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-a="tab" data-k="${k}">${l}</button>`).join("");
- $("#v").innerHTML=V[tab]();
+ hdr();if(!me){$("#nav").innerHTML="";$("#v").innerHTML=authView();return}
+ if(tab==="usr"&&!isAdm())tab="dash";
+ $("#nav").innerHTML=tabs().map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-a="tab" data-k="${k}">${l}</button>`).join("");
+ $("#v").innerHTML=V[tab]();lock($("#v"));
  const qi=$("#q");if(qi&&document.activeElement===document.body&&q){qi.focus();qi.setSelectionRange(q.length,q.length)}
 }
 function logPM(u){u.hist.push({t:today(),j:"Pemeliharaan",k:"Cek perangkat keras dan kabel, pembersihan",b:0})}
@@ -134,22 +166,43 @@ function openU(id,isNew){
  <label for="d-cat">Catatan</label><textarea id="d-cat" rows="2">${esc(u.cat)}</textarea>
  <div class="row"><button class="bt pr" data-a="usave" data-id="${esc(id)}">Simpan unit</button><button class="bt" data-a="close">Tutup</button><span class="sp"></span><button class="bt" data-a="udel" data-id="${esc(id)}" style="color:var(--bad)">Hapus unit</button></div>
  <h2 style="margin-top:18px">Riwayat perbaikan dan pemeliharaan</h2>
- <div style="display:flex;gap:6px;flex-wrap:wrap"><select id="h-j" style="width:auto">${["Diagnosis","Perbaikan","Penggantian komponen","Pemeliharaan","Catatan"].map(o=>`<option>${o}</option>`).join("")}</select><input id="h-k" placeholder="Keterangan" style="flex:1;min-width:120px;width:auto"><input id="h-b" type="number" min="0" placeholder="Biaya (Rp)" style="width:120px"><button class="bt" data-a="hadd" data-id="${esc(id)}">Tambah</button></div>
+ <div class="hrow" style="display:flex;gap:6px;flex-wrap:wrap"><select id="h-j" style="width:auto">${["Diagnosis","Perbaikan","Penggantian komponen","Pemeliharaan","Catatan"].map(o=>`<option>${o}</option>`).join("")}</select><input id="h-k" placeholder="Keterangan" style="flex:1;min-width:120px;width:auto"><input id="h-b" type="number" min="0" placeholder="Biaya (Rp)" style="width:120px"><button class="bt" data-a="hadd" data-id="${esc(id)}">Tambah</button></div>
  ${u.hist.slice().reverse().map(h=>`<div class="h"><b>${h.t}</b> · ${esc(h.j)}${h.b?" · "+rp(h.b):""}<br>${esc(h.k)}</div>`).join("")||'<p class="mu">Belum ada riwayat.</p>'}`;
- const d=$("#dlg");if(!d.open)d.showModal();
+ const d=$("#dlg");if(!d.open)d.showModal();lock(d);
 }
-document.addEventListener("click",e=>{
+document.addEventListener("click",async e=>{
  const el=e.target.closest("[data-a]");if(!el)return;const a=el.dataset.a,id=el.dataset.id;
+ if(!canEdit()&&["add","usave","udel","hadd","pm1","pmall","reset","cell","csave","dedit"].includes(a))return;
+ if(!isAdm()&&["uadd","upw","upw2","udl"].includes(a))return;
  if(a==="tab"){tab=el.dataset.k;rst=false;render()}
  else if(a==="open")openU(id);
  else if(a==="close")$("#dlg").close();
- else if(a==="add"){const m=Math.max(0,...S.units.map(u=>parseInt(u.id.replace(/\D/g,""))||0))+1,nid="TKJ-"+String(m).padStart(2,"0");S.units.push({id:nid,spec:"",lok:"Lab TKJ",dana:"",kon:"Berfungsi",cat:"",hist:[]});save();render();openU(nid)}
+ else if(a==="add"){const m=Math.max(0,...S.units.map(u=>parseInt(u.id.replace(/\D/g,""))||0))+1,nid="TKJ-"+String(m).padStart(2,"0");S.units.push({id:nid,spec:"",lok:"Lab TKJ",dana:"",kon:"Berfungsi",cat:"",hist:[]});place(nid);save();render();openU(nid)}
  else if(a==="usave"){const u=S.units.find(x=>x.id===id);u.spec=$("#d-spec").value.trim();u.lok=$("#d-lok").value.trim();u.dana=$("#d-dana").value.trim();u.kon=$("#d-kon").value;u.cat=$("#d-cat").value.trim();save();$("#dlg").close();render()}
- else if(a==="udel"){S.units=S.units.filter(x=>x.id!==id);save();$("#dlg").close();render()}
+ else if(a==="udel"){S.units=S.units.filter(x=>x.id!==id);Object.keys(S.denah.cells).forEach(k=>{if(S.denah.cells[k]===id)delete S.denah.cells[k]});save();$("#dlg").close();render()}
  else if(a==="hadd"){const u=S.units.find(x=>x.id===id),k=$("#h-k").value.trim(),j=$("#h-j").value;u.hist.push({t:today(),j:j==="Pemeliharaan"?"Pemeliharaan":j,k:k||j,b:Number($("#h-b").value)||0});save();openU(id);render()}
  else if(a==="pm1"){logPM(S.units.find(x=>x.id===id));save();render()}
  else if(a==="pmall"){S.units.filter(u=>!donePM(u)).forEach(logPM);save();render()}
- else if(a==="reset"){if(!rst){rst=true;render()}else{S=seed();save();rst=false;render()}}
+ else if(a==="reset"){if(!rst){rst=true;render()}else{const us=S.users;S=fix(seed());S.users=us;save();rst=false;render()}}
+ else if(a==="dedit"){dedit=!dedit;render()}
+ else if(a==="cell")openC(el.dataset.k);
+ else if(a==="csave"){const k=el.dataset.k,u=$("#c-u").value,l=$("#c-l").value.trim(),D=S.denah;if(u){Object.keys(D.cells).forEach(x=>{if(D.cells[x]===u)delete D.cells[x]});D.cells[k]=u}else if(l)D.cells[k]="#"+l;else delete D.cells[k];save();$("#dlg").close();render()}
+ else if(a==="out"){me=null;dedit=false;try{sessionStorage.removeItem(SK)}catch(e){}render()}
+ else if(a==="setup"){const n=$("#a-n").value.trim(),un=$("#a-u").value.trim().toLowerCase(),p=$("#a-p").value,m=$("#a-m");
+  if(!n||!un||/\s/.test(un)){m.textContent="Isi nama lengkap dan nama pengguna (tanpa spasi).";return}
+  if(p.length<6){m.textContent="Kata sandi minimal 6 karakter.";return}
+  if(p!==$("#a-p2").value){m.textContent="Kata sandi dan ulangannya tidak sama.";return}
+  const u={u:un,n,r:"admin",h:await hp(p,un)};S.users.push(u);save();login(u)}
+ else if(a==="login"){const un=$("#a-u").value.trim().toLowerCase(),u=S.users.find(x=>x.u===un),h=u?await hp($("#a-p").value,u.u):"";
+  if(u&&h===u.h)login(u);else $("#a-m").textContent="Nama pengguna atau kata sandi salah."}
+ else if(a==="uadd"){const n=$("#n-n").value.trim(),un=$("#n-u").value.trim().toLowerCase(),p=$("#n-p").value,m=$("#n-m");
+  if(!n||!un||/\s/.test(un)){m.textContent="Isi nama lengkap dan nama pengguna (tanpa spasi).";return}
+  if(S.users.some(x=>x.u===un)){m.textContent="Nama pengguna sudah dipakai.";return}
+  if(p.length<6){m.textContent="Kata sandi minimal 6 karakter.";return}
+  S.users.push({u:un,n,r:$("#n-r").value,h:await hp(p,un)});save();render()}
+ else if(a==="udl"){const u=S.users[+el.dataset.i];if(u&&u.u!==me.u){S.users.splice(+el.dataset.i,1);save();render()}}
+ else if(a==="upw"){const u=S.users[+el.dataset.i];$("#dlg").innerHTML=`<h2>Ganti kata sandi</h2><p class="mu">${esc(u.n)} (${esc(u.u)})</p><label for="p-n">Kata sandi baru (minimal 6 karakter)</label><input id="p-n" type="password" autocomplete="new-password"><p class="msg" id="p-m" role="alert"></p><div class="row"><button class="bt pr" data-a="upw2" data-i="${el.dataset.i}">Simpan sandi</button><button class="bt" data-a="close">Batal</button></div>`;$("#dlg").showModal()}
+ else if(a==="upw2"){const u=S.users[+el.dataset.i],p=$("#p-n").value;if(p.length<6){$("#p-m").textContent="Kata sandi minimal 6 karakter.";return}u.h=await hp(p,u.u);save();$("#dlg").close()}
 });
 document.addEventListener("input",e=>{
  const t=e.target;
@@ -158,9 +211,12 @@ document.addEventListener("input",e=>{
 document.addEventListener("change",e=>{
  const t=e.target;
  if(t.id==="f"){flt=t.value;render()}
+ else if((t.id==="dc"||t.id==="dr")&&canEdit()){const D=S.denah;D.cols=Math.min(12,Math.max(1,+$("#dc").value||1));D.rows=Math.min(12,Math.max(1,+$("#dr").value||1));Object.keys(D.cells).forEach(k=>{const[r,c]=k.split("-").map(Number);if(r>=D.rows||c>=D.cols)delete D.cells[k]});save();render()}
  else if(t.dataset.a==="rab"){S.rab[+t.dataset.i].r=Math.max(0,Number(t.value)||0);save();render()}
  else if(t.dataset.a==="prog"){S.prog[+t.dataset.i].s=t.value;save();render()}
 });
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest("#auth"))$("#a-b").click()});
+try{const ss=sessionStorage.getItem(SK);me=S.users.find(x=>x.u===ss)||null}catch(e){}
 render();
 </script>
 </body>
