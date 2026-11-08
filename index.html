@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SIMLAB BSM TKJ – Pengelolaan Lab Komputer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{--bg:#f3f5f7;--sf:#fff;--tx:#14202b;--mu:#566574;--bd:#d8dee5;--ac:#1d4e89;--ok:#1b7f4c;--oks:#d9f1e3;--bad:#b3261e;--bads:#fbe1de;--wn:#9a5b00;--wns:#fcefd2;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e151c;--sf:#16202a;--tx:#e6edf3;--mu:#9aa9b7;--bd:#2a3744;--ac:#7fb2ee;--ok:#5fd394;--oks:#143525;--bad:#ff8f86;--bads:#3d1a17;--wn:#f2b84b;--wns:#3a2a0b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e151c;--sf:#16202a;--tx:#e6edf3;--mu:#9aa9b7;--bd:#2a3744;--ac:#7fb2ee;--ok:#5fd394;--oks:#143525;--bad:#ff8f86;--bads:#3d1a17;--wn:#f2b84b;--wns:#3a2a0b;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 "Atkinson Hyperlegible",system-ui,sans-serif}
+header{padding:20px 16px 0;max-width:1040px;margin:auto}
+h1{font-size:1.45rem;margin:0}header p{margin:2px 0 14px;color:var(--mu);font-size:.92rem}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--bd);max-width:1040px;margin:auto;padding:0 16px}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--mu);font:inherit;padding:10px 12px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--tx);border-color:var(--ac);font-weight:700}
+main{max-width:1040px;margin:auto;padding:18px 16px 40px}
+h2{font-size:1.15rem;margin:0 0 10px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px}
+.kpi b{display:block;font-size:1.7rem;line-height:1.1}.kpi span{color:var(--mu);font-size:.85rem}
+.map{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.t{border:2px solid;border-radius:6px;padding:6px 2px;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer;background:var(--oks);border-color:var(--ok);color:var(--ok)}
+.t.r{background:var(--bads);border-color:var(--bad);color:var(--bad)}.t.p{background:var(--wns);border-color:var(--wn);color:var(--wn)}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--mu);margin-top:10px}
+.two{display:grid;grid-template-columns:3fr 2fr;gap:16px}@media(max-width:720px){.two{grid-template-columns:1fr}}
+.b{display:inline-block;padding:1px 9px;border-radius:99px;font-size:.8rem;font-weight:700}
+.b.ok{background:var(--oks);color:var(--ok)}.b.bad{background:var(--bads);color:var(--bad)}.b.wn{background:var(--wns);color:var(--wn)}
+.sc{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}th{color:var(--mu);font-weight:700;font-size:.82rem}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+button.bt,select,input,textarea{font:inherit;color:var(--tx);background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:7px 10px}
+button.bt{cursor:pointer}button.pr{background:var(--ac);border-color:var(--ac);color:var(--bg);font-weight:700}
+.bar{height:8px;border-radius:4px;background:var(--bd);overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
+.tb{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tb input{flex:1;min-width:150px}
+dialog{border:1px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--tx);width:min(560px,94vw);padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+label{display:block;font-size:.85rem;color:var(--mu);margin:8px 0 2px}dialog input,dialog select,dialog textarea{width:100%}
+.row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.row .sp{flex:1}
+.h{font-size:.88rem;border-top:1px solid var(--bd);padding:6px 0}.mu{color:var(--mu)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+</style>
+</head>
+<body>
+<header>
+<h1>SIMLAB BSM TKJ</h1>
+<p>Inventaris, pemeliharaan preventif, dan anggaran Lab Komputer TKJ · SMK Bina Siswa Mandiri Bl. Limbangan</p>
+</header>
+<nav id="nav" role="tablist"></nav>
+<main id="v"></main>
+<dialog id="dlg"></dialog>
+<script>
+const $=s=>document.querySelector(s),KEY="simlab-tkj-v1";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const rp=n=>"Rp"+Number(n||0).toLocaleString("id-ID");
+const today=()=>new Date().toISOString().slice(0,10);
+const TABS=[["dash","Dasbor"],["inv","Inventaris"],["pm","Pemeliharaan"],["rab","Anggaran"],["mon","Target dan monev"]];
+const RAB0=[["Diagnosis 35 komputer",500000],["Perbaikan 5 komputer rusak",4000000],["Komponen pengganti",2500000],["Cleaning kit dan alat maintenance",750000],["Kabel, konektor, bahan pendukung",750000],["Digitalisasi inventaris dan label",500000],["Pelatihan/pemeliharaan bersama Skyline",1500000],["Penataan kabel dan keselamatan",1000000],["Monitoring dan evaluasi",500000],["Cadangan teknis",1000000]];
+const PROG0=["Audit dan inventarisasi","Diagnosis kerusakan","Perbaikan prioritas","Pemeliharaan preventif","Inventaris dan logbook digital","Pendampingan mitra","Evaluasi pemanfaatan lab"];
+function seed(){return{units:Array.from({length:35},(_,i)=>({id:"TKJ-"+String(i+1).padStart(2,"0"),spec:"",lok:"Lab TKJ",dana:"",kon:i>=30?"Rusak":"Berfungsi",cat:"",hist:[]})),rab:RAB0.map(([n,e])=>({n,e,r:0})),prog:PROG0.map(n=>({n,s:"Belum"}))}}
+function load(){try{const x=localStorage.getItem(KEY);if(x)return JSON.parse(x)}catch(e){}return seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let S=load(),tab="dash",q="",flt="all",rst=false;
+const cnt=k=>S.units.filter(u=>u.kon===k).length;
+const lastPM=u=>u.hist.filter(h=>h.j==="Pemeliharaan").map(h=>h.t).sort().pop();
+const donePM=u=>{const l=lastPM(u);return !!l&&l.slice(0,7)===today().slice(0,7)};
+const badge=k=>`<span class="b ${k==="Berfungsi"?"ok":k==="Rusak"?"bad":"wn"}">${k}</span>`;
+const cls=k=>k==="Rusak"?"r":k==="Dalam Perbaikan"?"p":"";
+const bar=p=>`<div class="bar"><i style="width:${Math.min(100,Math.max(0,p))}%"></i></div>`;
+const kpi=(v,l)=>`<div class="kpi"><b>${v}</b><span>${l}</span></div>`;
+
+function dash(){
+ const n=S.units.length,ok=cnt("Berfungsi"),bad=cnt("Rusak"),fx=cnt("Dalam Perbaikan"),pm=S.units.filter(donePM).length;
+ const est=S.rab.reduce((a,x)=>a+x.e,0),rl=S.rab.reduce((a,x)=>a+x.r,0);
+ const broken=S.units.filter(u=>u.kon!=="Berfungsi");
+ return `<div class="kpis">${kpi(n,"unit komputer")}${kpi(ok+" ("+Math.round(ok/Math.max(n,1)*100)+"%)","berfungsi")}${kpi(bad,"rusak")}${kpi(fx,"dalam perbaikan")}${kpi(pm+"/"+n,"dipelihara bulan ini")}</div>
+ <div class="two"><div class="card"><h2>Denah kesiapan lab</h2>
+ <div class="map">${S.units.map(u=>`<button class="t ${cls(u.kon)}" data-a="open" data-id="${esc(u.id)}" title="${esc(u.id)}: ${u.kon}">${esc(u.id.replace(/^TKJ-/,""))}</button>`).join("")}</div>
+ <div class="lg"><span>Hijau: berfungsi</span><span>Kuning: dalam perbaikan</span><span>Merah: rusak</span><span>Ketuk nomor untuk membuka unit</span></div></div>
+ <div><div class="card"><h2>Perlu tindakan</h2>${broken.length?broken.map(u=>`<div class="h"><button class="bt" data-a="open" data-id="${esc(u.id)}">${esc(u.id)}</button> ${badge(u.kon)}</div>`).join(""):'<p class="mu">Semua unit berfungsi.</p>'}
+ <div class="h">Belum dipelihara bulan ini: <b>${n-pm}</b> unit</div></div>
+ <div class="card"><h2>Anggaran</h2><div style="display:flex;justify-content:space-between"><span>Realisasi</span><b>${rp(rl)}</b></div>${bar(rl/est*100)}<p class="mu" style="margin:6px 0 0">dari estimasi ${rp(est)}</p></div></div></div>`}
+
+function inv(){
+ const L=S.units.filter(u=>(flt==="all"||u.kon===flt)&&(u.id+u.spec+u.lok+(u.dana||"")).toLowerCase().includes(q.toLowerCase()));
+ return `<div class="tb"><input id="q" type="search" placeholder="Cari kode, spesifikasi, lokasi, atau sumber dana" value="${esc(q)}" aria-label="Cari unit">
+ <select id="f" aria-label="Filter kondisi">${["all","Berfungsi","Rusak","Dalam Perbaikan"].map(o=>`<option value="${o}" ${o===flt?"selected":""}>${o==="all"?"Semua kondisi":o}</option>`).join("")}</select>
+ <button class="bt pr" data-a="add">Tambah unit</button></div>
+ <div class="card sc"><table><thead><tr><th>Kode aset</th><th>Spesifikasi</th><th>Lokasi</th><th>Sumber dana</th><th>Kondisi</th><th>Pemeliharaan terakhir</th><th></th></tr></thead><tbody>
+ ${L.map(u=>`<tr><td><b>${esc(u.id)}</b></td><td>${esc(u.spec)||'<span class="mu">Belum diisi</span>'}</td><td>${esc(u.lok)}</td><td>${esc(u.dana)||'<span class="mu">Belum diisi</span>'}</td><td>${badge(u.kon)}</td><td>${lastPM(u)||'<span class="mu">Belum pernah</span>'}</td><td><button class="bt" data-a="open" data-id="${esc(u.id)}">Buka</button></td></tr>`).join("")||'<tr><td colspan="7" class="mu">Tidak ada unit yang cocok.</td></tr>'}</tbody></table></div>`}
+
+function pm(){
+ const due=S.units.filter(u=>!donePM(u)),n=S.units.length,d=n-due.length;
+ return `<div class="card"><h2>Pemeliharaan preventif bulan ${today().slice(0,7)}</h2>
+ <p class="mu" style="margin-top:0">Tiap bulan: cek perangkat keras dan kabel, bersihkan unit, lalu catat kondisinya.</p>${bar(d/Math.max(n,1)*100)}<p>${d} dari ${n} unit selesai.</p>
+ ${due.length?`<button class="bt pr" data-a="pmall">Tandai semua selesai (${due.length})</button>`:""}</div>
+ <div class="card sc"><table><thead><tr><th>Unit</th><th>Kondisi</th><th>Terakhir</th><th></th></tr></thead><tbody>
+ ${due.map(u=>`<tr><td><b>${esc(u.id)}</b></td><td>${badge(u.kon)}</td><td>${lastPM(u)||'<span class="mu">Belum pernah</span>'}</td><td><button class="bt" data-a="pm1" data-id="${esc(u.id)}">Selesai</button></td></tr>`).join("")||'<tr><td colspan="4" class="mu">Semua unit sudah dipelihara bulan ini.</td></tr>'}</tbody></table></div>`}
+
+function rab(){
+ const e=S.rab.reduce((a,x)=>a+x.e,0),r=S.rab.reduce((a,x)=>a+x.r,0);
+ return `<div class="card sc"><h2>Anggaran dan realisasi</h2><table><thead><tr><th>Komponen</th><th class="n">Estimasi</th><th class="n">Realisasi (Rp)</th><th class="n">Sisa</th></tr></thead><tbody>
+ ${S.rab.map((x,i)=>`<tr><td>${esc(x.n)}</td><td class="n">${rp(x.e)}</td><td class="n"><input type="number" min="0" step="50000" value="${x.r}" data-a="rab" data-i="${i}" style="width:130px;text-align:right" aria-label="Realisasi ${esc(x.n)}"></td><td class="n" style="color:${x.e-x.r<0?"var(--bad)":"inherit"}">${rp(x.e-x.r)}</td></tr>`).join("")}
+ <tr><th>Total</th><th class="n">${rp(e)}</th><th class="n">${rp(r)}</th><th class="n">${rp(e-r)}</th></tr></tbody></table>${bar(r/e*100)}
+ <p class="mu">Estimasi disesuaikan dengan hasil diagnosis dan harga aktual.</p></div>`}
+
+function mon(){
+ const n=S.units.length,ok=cnt("Berfungsi"),bad=cnt("Rusak"),rec=S.units.filter(u=>u.spec.trim()).length,lg=S.units.filter(u=>u.hist.length).length,pmn=S.units.filter(donePM).length;
+ const R=[["Komputer berfungsi","30 unit (85,7%)","Minimal 34 unit",ok+" unit",ok>=34],["Komputer rusak","5 unit (14,3%)","Maksimal 1 unit",bad+" unit",bad<=1],["Inventaris digital","Belum terintegrasi","100% komputer tercatat",Math.round(rec/Math.max(n,1)*100)+"%",rec===n],["Logbook pemeliharaan","Belum optimal","Tersedia untuk seluruh perangkat",lg+"/"+n+" unit",lg===n],["Pemeliharaan preventif","Belum terjadwal","Jadwal rutin terlaksana",pmn+"/"+n+" bulan ini",pmn===n]];
+ return `<div class="card sc"><h2>Indikator 6 bulan</h2><table><thead><tr><th>Indikator</th><th>Baseline</th><th>Target</th><th>Saat ini</th><th>Status</th></tr></thead><tbody>
+ ${R.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><b>${r[3]}</b></td><td>${r[4]?'<span class="b ok">Tercapai</span>':'<span class="b wn">Belum</span>'}</td></tr>`).join("")}</tbody></table>
+ <p class="mu">Unit dihitung tercatat jika spesifikasinya sudah diisi.</p></div>
+ <div class="card sc"><h2>Program tujuh kegiatan</h2><table><tbody>${S.prog.map((p,i)=>`<tr><td>${i+1}. ${esc(p.n)}</td><td><select data-a="prog" data-i="${i}" aria-label="Status ${esc(p.n)}">${["Belum","Berjalan","Selesai"].map(o=>`<option ${o===p.s?"selected":""}>${o}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div>
+ <button class="bt" data-a="reset">${rst?"Klik lagi untuk menghapus semua data":"Kembalikan data awal"}</button>`}
+
+const V={dash,inv,pm,rab,mon};
+function render(){
+ $("#nav").innerHTML=TABS.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-a="tab" data-k="${k}">${l}</button>`).join("");
+ $("#v").innerHTML=V[tab]();
+ const qi=$("#q");if(qi&&document.activeElement===document.body&&q){qi.focus();qi.setSelectionRange(q.length,q.length)}
+}
+function logPM(u){u.hist.push({t:today(),j:"Pemeliharaan",k:"Cek perangkat keras dan kabel, pembersihan",b:0})}
+function openU(id,isNew){
+ const u=S.units.find(x=>x.id===id);if(!u)return;
+ $("#dlg").innerHTML=`<h2>${esc(u.id)}</h2>
+ <label for="d-spec">Spesifikasi</label><input id="d-spec" value="${esc(u.spec)}" placeholder="Contoh: prosesor, RAM, penyimpanan">
+ <label for="d-lok">Lokasi</label><input id="d-lok" value="${esc(u.lok)}">
+ <label for="d-dana">Sumber dana</label><input id="d-dana" list="dana-l" value="${esc(u.dana)}" placeholder="Pilih atau ketik sumber dana"><datalist id="dana-l"><option value="BOS"><option value="Bantuan pemerintah"><option value="Komite sekolah"><option value="Hibah/CSR mitra industri"><option value="Dana mandiri sekolah"></datalist>
+ <label for="d-kon">Kondisi</label><select id="d-kon">${["Berfungsi","Rusak","Dalam Perbaikan"].map(o=>`<option ${o===u.kon?"selected":""}>${o}</option>`).join("")}</select>
+ <label for="d-cat">Catatan</label><textarea id="d-cat" rows="2">${esc(u.cat)}</textarea>
+ <div class="row"><button class="bt pr" data-a="usave" data-id="${esc(id)}">Simpan unit</button><button class="bt" data-a="close">Tutup</button><span class="sp"></span><button class="bt" data-a="udel" data-id="${esc(id)}" style="color:var(--bad)">Hapus unit</button></div>
+ <h2 style="margin-top:18px">Riwayat perbaikan dan pemeliharaan</h2>
+ <div style="display:flex;gap:6px;flex-wrap:wrap"><select id="h-j" style="width:auto">${["Diagnosis","Perbaikan","Penggantian komponen","Pemeliharaan","Catatan"].map(o=>`<option>${o}</option>`).join("")}</select><input id="h-k" placeholder="Keterangan" style="flex:1;min-width:120px;width:auto"><input id="h-b" type="number" min="0" placeholder="Biaya (Rp)" style="width:120px"><button class="bt" data-a="hadd" data-id="${esc(id)}">Tambah</button></div>
+ ${u.hist.slice().reverse().map(h=>`<div class="h"><b>${h.t}</b> · ${esc(h.j)}${h.b?" · "+rp(h.b):""}<br>${esc(h.k)}</div>`).join("")||'<p class="mu">Belum ada riwayat.</p>'}`;
+ const d=$("#dlg");if(!d.open)d.showModal();
+}
+document.addEventListener("click",e=>{
+ const el=e.target.closest("[data-a]");if(!el)return;const a=el.dataset.a,id=el.dataset.id;
+ if(a==="tab"){tab=el.dataset.k;rst=false;render()}
+ else if(a==="open")openU(id);
+ else if(a==="close")$("#dlg").close();
+ else if(a==="add"){const m=Math.max(0,...S.units.map(u=>parseInt(u.id.replace(/\D/g,""))||0))+1,nid="TKJ-"+String(m).padStart(2,"0");S.units.push({id:nid,spec:"",lok:"Lab TKJ",dana:"",kon:"Berfungsi",cat:"",hist:[]});save();render();openU(nid)}
+ else if(a==="usave"){const u=S.units.find(x=>x.id===id);u.spec=$("#d-spec").value.trim();u.lok=$("#d-lok").value.trim();u.dana=$("#d-dana").value.trim();u.kon=$("#d-kon").value;u.cat=$("#d-cat").value.trim();save();$("#dlg").close();render()}
+ else if(a==="udel"){S.units=S.units.filter(x=>x.id!==id);save();$("#dlg").close();render()}
+ else if(a==="hadd"){const u=S.units.find(x=>x.id===id),k=$("#h-k").value.trim(),j=$("#h-j").value;u.hist.push({t:today(),j:j==="Pemeliharaan"?"Pemeliharaan":j,k:k||j,b:Number($("#h-b").value)||0});save();openU(id);render()}
+ else if(a==="pm1"){logPM(S.units.find(x=>x.id===id));save();render()}
+ else if(a==="pmall"){S.units.filter(u=>!donePM(u)).forEach(logPM);save();render()}
+ else if(a==="reset"){if(!rst){rst=true;render()}else{S=seed();save();rst=false;render()}}
+});
+document.addEventListener("input",e=>{
+ const t=e.target;
+ if(t.id==="q"){q=t.value;render()}
+});
+document.addEventListener("change",e=>{
+ const t=e.target;
+ if(t.id==="f"){flt=t.value;render()}
+ else if(t.dataset.a==="rab"){S.rab[+t.dataset.i].r=Math.max(0,Number(t.value)||0);save();render()}
+ else if(t.dataset.a==="prog"){S.prog[+t.dataset.i].s=t.value;save();render()}
+});
+render();
+</script>
+</body>
+</html>
